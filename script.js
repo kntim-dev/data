@@ -1,69 +1,79 @@
-// Dashboard Data and Configuration
-const generateSalesData = (region) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return {
-        x: months,
-        y: months.map(() => Math.floor(Math.random() * 50000) + 10000),
+// Animated Gradient Background
+const canvas = document.getElementById('gradient-canvas');
+const ctx = canvas.getContext('2d');
+
+let time = 0;
+
+const drawGradient = () => {
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, `hsl(${time % 360}, 70%, 50%)`);
+    gradient.addColorStop(1, `hsl(${(time + 120) % 360}, 70%, 50%)`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    time += 0.5;
+    requestAnimationFrame(drawGradient);
+};
+
+// Initialize Canvas Size
+const resizeCanvas = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+};
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Initialize Animations
+drawGradient();
+
+// Scroll Animations
+const animateOnScroll = () => {
+    const elements = document.querySelectorAll('.animate-card, .animate-progress');
+    
+    elements.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.8) {
+            el.style.animationPlayState = 'running';
+            
+            if(el.classList.contains('animate-progress')) {
+                el.querySelector('.progress-bar').style.width = el.querySelector('.progress-bar').style.width;
+            }
+        }
+    });
+};
+
+window.addEventListener('scroll', animateOnScroll);
+animateOnScroll();
+
+// Initialize Charts
+const initCharts = () => {
+    // Mining Cost Reduction Chart
+    const miningData = [{
+        x: ['Q1', 'Q2', 'Q3', 'Q4'],
+        y: [120, 95, 85, 75],
         type: 'scatter',
-        line: {color: '#00f3ff'},
-        name: region
-    };
-};
-
-// Initialize Sales Dashboard
-const initSalesDashboard = () => {
-    const data = [
-        generateSalesData('North'),
-        generateSalesData('South')
-    ];
+        line: {color: '#2EC4B6'}
+    }];
     
-    const layout = {
-        title: 'Regional Sales Performance',
-        plot_bgcolor: 'rgba(0,0,0,0)',
+    const miningLayout = {
+        title: 'Quarterly Cost Reduction',
         paper_bgcolor: 'rgba(0,0,0,0)',
-        font: {color: '#fff'},
-        xaxis: {gridcolor: 'rgba(255,255,255,0.1)'},
-        yaxis: {gridcolor: 'rgba(255,255,255,0.1)'}
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {color: '#fff'}
     };
     
-    Plotly.newPlot('sales-chart', data, layout);
+    Plotly.newPlot('mining-chart', miningData, miningLayout);
+
+    // Retail Sales Chart
+    const retailData = [{
+        x: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        y: [45, 68, 72, 89, 95],
+        type: 'bar',
+        marker: {color: '#FF9F1C'}
+    }];
+    
+    Plotly.newPlot('retail-chart', retailData, miningLayout);
 };
 
-// Tab Functionality
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Remove active class from all buttons and content
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.dashboard-content').forEach(c => c.classList.remove('active'));
-        
-        // Add active class to clicked button and corresponding content
-        btn.classList.add('active');
-        const dashboardId = btn.dataset.dashboard;
-        document.getElementById(`${dashboardId}-dash`).classList.add('active');
-    });
-});
-
-// Filter Buttons
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const filter = btn.dataset.filter;
-        // Add filter logic here
-        console.log(`Filtering by: ${filter}`);
-    });
-});
-
-// Initialize on Load
-document.addEventListener('DOMContentLoaded', () => {
-    initSalesDashboard();
-    
-    // Add smooth scrolling
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-});
+document.addEventListener('DOMContentLoaded', initCharts);
